@@ -156,7 +156,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     }
 
     // build query
-    const query = { userId: userId };
+    const query = { username: user.username };
     if (from) {
       query.date = { ...query.date, $gte: new Date(from) };
     }
@@ -166,7 +166,7 @@ app.get("/api/users/:_id/logs", async (req, res) => {
     
 
     // execute query
-    const exercises = await Exercise.find(query).sort( parseInt(limit) || 0 );
+    const exercises = await Exercise.find(query).limit( parseInt(limit) || 0 );
 
     // format response
     const log = exercises.map(exercise =>({
