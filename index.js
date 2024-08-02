@@ -67,6 +67,83 @@ app.post("/api/users", async (req, res) => {
   }
 });
 
+// add new exercise for user
+app.post("/api/users/:_id/exercises", async (req, res) => {
+  const userId = req.params._id;
+  const description = req.body.description;
+  const duration = req.body.duration;
+  const date = req.body.date;
+
+  // validate input
+  if (!description || !duration) {
+    return res.status(400).json({ error: "Description and duration are required" });
+  }
+
+  // check if duration is a number
+  const parsedDuration = parseInt(duration);
+  if (isNaN(parsedDuration)) {
+    return res.status(400).json({ error: "Duration must be a number" });
+  }
+
+  // check if date is a valid date
+  let parsedDate;
+  if (date) {
+    parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return res.status(400).json({ error: "Invalid date" });
+    }
+  } else {
+    parsedDate = new Date();
+  }
+
+  try {
+    // check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // create new exercise
+    const exercise = new Exercise({
+      username: user.username,
+      description: description,
+      duration: parsedDuration,
+      date: parsedDate,
+    });
+
+    // save exercise
+    await exercise.save();
+
+    // return exercise
+    res.json({
+      username: user.username,
+      description: exercise.description,
+      duration: exercise.duration,
+      date: exercise.date.toDateString(),
+      _id: user._id,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+
+})
+
+// get all users
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+  res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
