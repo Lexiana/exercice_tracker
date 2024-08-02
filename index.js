@@ -47,6 +47,11 @@ app.get("/", (req, res) => {
 // create new user
 app.post("/api/users", async (req, res) => {
   const username = req.body.username;
+  // check if username is empty
+  if (!username) {
+    return res.json({ error: "Username is required" });
+  }
+
   try {
     //check if username already exists
     let user = await User.findOne({ username: username });
