@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI);
 // create mongoose schema
 
 const userSchema = new mongoose.Schema({
-  usernamer: {
+  username: {
     type: String,
     required: true,
   },
@@ -49,20 +49,21 @@ app.post("/api/users", async (req, res) => {
   const username = req.body.username;
   // check if username is empty
   if (!username) {
-    return res.json({ error: "Username is required" });
+    return res.status(400).json({ error: "Username is required" });
   }
 
   try {
     //check if username already exists
     let user = await User.findOne({ username: username });
-    // if not creat new user
+    // if not create new user
     if (!user) {
       user = new User({ username: username });
       await user.save();
     }
     res.json({ username: user.username, _id: user._id });
   } catch (err) {
-    res.json({ error: err.message });
+    console.error(err);
+  res.status(500).json({ error: "Server error" });
   }
 });
 
