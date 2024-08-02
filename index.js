@@ -141,6 +141,55 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
+// get all exercises for user
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const userId = req.params._id;
+  const from = req.query.from;
+  const to = req.query.to;
+  const limit = req.query.limit;
+
+  try {
+    // find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // build query
+    const query = { userId: userId };
+    if (from) {
+      query.date = { ...query.date, $gte: new Date(from) };
+    }
+    if (to) {
+      query.date = { ...query.date, $lte: new Date(to) };
+    }
+    
+
+    // execute query
+    const exercises = await Exercise.find(query).sort( parseInt(limit) || 0 );
+
+    // format response
+    const log = exercises.map(exercise =>({
+      
+        description: exercise.description,
+        duration: exercise.duration,
+        date: exercise.date.toDateString(),
+      }));
+
+    // return response
+    res.json({
+      _id: user._id,
+      username: user.username,
+      count: exercises.length,
+      log: log
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
+
 
 
 
