@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.static("public"));
 
 // connect database
-mongoose.conect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -47,23 +47,22 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-
 // create new user
-app.post('/api/users', async(req, res)=>{
+app.post("/api/users", async (req, res) => {
   const username = req.body.username;
-  try{
+  try {
     //check if username already exists
-    let user = await User.findOne({username: username});
+    let user = await User.findOne({ username: username });
     // if not creat new user
-    if(!user){
-      user = new User({username: username});
+    if (!user) {
+      user = new User({ username: username });
       await user.save();
     }
-    res.json({username: user.username, _id: user._id});
-  } catch(err){
-    res.json({error: err.message})
-  })
-})
+    res.json({ username: user.username, _id: user._id });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
